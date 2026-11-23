@@ -1,0 +1,52 @@
+name: ci
+
+# The site on the oldest and the newest Python it supports, and the example API. No network in a
+# test: Keelie and Stripe are stand-ins.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  site:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.12", "3.14"]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.3.0
+        with:
+          enable-cache: true
+          python-version: ${{ matrix.python }}
+      - run: uv sync --locked
+      - run: uv run --locked ruff format --check .
+      - run: uv run --locked ruff check .
+      - run: uv run --locked mypy
+      - run: uv run --locked pytest
+
+  example-api:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: example-api
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.3.0
+        with:
+          enable-cache: true
+      - run: uv sync --locked
+      - run: uv run --locked ruff format --check .
+      - run: uv run --locked ruff check .
+      - run: uv run --locked mypy
+      - run: uv run --locked pytest
+      - name: openapi.json matches the code
+        run: |
+          uv run --locked python export_openapi.py
+          git diff --exit-code openapi.json

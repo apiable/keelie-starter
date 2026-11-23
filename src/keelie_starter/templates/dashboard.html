@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Your account{% endblock %}
+{% block content %}
+<h1>Hello, {{ user.display_name }}</h1>
+{% if not subject_id %}
+  <div class="notice">We're still setting up your account. Reload this page in a minute.</div>
+{% endif %}
+{% if rows %}
+  <div class="grid">
+  {% for row in rows %}
+  {% set s = row.subscription %}
+  <div class="card">
+    <h2>{{ row.plan.name }} <span class="status {{ s.status }}">{{ s.status.replace('_', ' ') }}</span></h2>
+    <p class="balance"><strong>{{ credits_text(s.credit_balance) }}</strong> credits</p>
+    <div class="actions push">
+      {% if s.status == 'past_due' %}<a class="button" href="/subscriptions/{{ s.id }}/pay">Pay now</a>{% endif %}
+      {% if s.status == 'active' %}<a class="button" href="/subscriptions/{{ s.id }}/credentials">Credentials</a>{% endif %}
+      <a class="button secondary" href="/subscriptions/{{ s.id }}">Details</a>
+    </div>
+  </div>
+  {% endfor %}
+  </div>
+  <p><a href="/plans">See all plans</a></p>
+{% else %}
+  <div class="card"><p>You're not on a plan yet.</p><p><a class="button" href="/plans">Choose a plan</a></p></div>
+{% endif %}
+{% endblock %}

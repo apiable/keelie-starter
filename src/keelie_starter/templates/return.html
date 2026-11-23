@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Checking your payment{% endblock %}
+{% block content %}
+<div class="card narrow">
+  <h1 id="headline">Checking your payment</h1>
+  <p id="message">This takes a few seconds.</p>
+  <p id="next" style="display:none"><a class="button" href="/subscriptions/{{ subscription_id }}/credentials">Go to your credentials</a></p>
+</div>
+<script>
+  // Our server reads the subscription from Keelie every two seconds, for a minute at most.
+  const url = {{ state_url | tojson }};
+  const started = Date.now();
+  async function check() {
+    try {
+      const answer = await fetch(url, { headers: { "Accept": "application/json" } });
+      if (answer.ok) {
+        const state = await answer.json();
+        if (state.done) {
+          document.getElementById("headline").textContent = "Thank you";
+          document.getElementById("message").textContent = "Your balance is " + state.balance + " credits.";
+          document.getElementById("next").style.display = "block";
+          return;
+        }
+      }
+    } catch (e) {}
+    if (Date.now() - started < 60000) {
+      setTimeout(check, 2000);
+    } else {
+      document.getElementById("headline").textContent = "Your payment is being processed";
+      document.getElementById("message").innerHTML = 'It can take a little longer. <a href="/subscriptions/{{ subscription_id }}">Check your plan again later</a>.';
+    }
+  }
+  check();
+</script>
+{% endblock %}

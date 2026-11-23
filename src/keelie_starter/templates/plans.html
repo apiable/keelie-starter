@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Plans{% endblock %}
+{% block content %}
+<h1>Choose a plan</h1>
+{% if not subject_id %}
+  <div class="notice">We're still setting up your account. Reload this page in a minute before you choose a plan.</div>
+{% endif %}
+<div class="grid">
+  {% for plan in plans %}
+  {% set p = plan.pricing %}
+  <div class="card">
+    <h2>{{ plan.name }}</h2>
+    {% include "_price.html" %}
+    {% if p.credits_per_period %}
+    <p>{{ credits_text(p.credits_per_period) }} credits included each {{ p.period }}.</p>
+    {% endif %}
+    {% if p.credit_packs %}
+      <p class="small">{% if p.credits_per_period %}More credits when you need them:{% else %}Buy credits in packs:{% endif %}</p>
+      <ul class="tight small">
+        {% for pack in p.credit_packs %}
+        <li>{{ credits_text(pack.credits) }} credits for {{ money(pack.price, plan.currency) }} ({{ per_credit(pack.price, pack.credits, plan.currency) }} a credit)</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <p class="small">What you can do:</p>
+    <ul class="tight small">
+      {% for s in plan.scopes %}<li>{{ settings.scope_words.get(s.scope, s.scope) }}</li>{% endfor %}
+    </ul>
+    <div class="push">
+    {% if plan.id in mine %}
+      <a class="button secondary" href="/subscriptions/{{ mine[plan.id] }}">Your plan</a>
+    {% else %}
+      <form method="post" action="/subscribe" data-once>
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <input type="hidden" name="plan_id" value="{{ plan.id }}">
+        <button type="submit" {% if not subject_id %}disabled{% endif %}>Choose {{ plan.name }}</button>
+      </form>
+    {% endif %}
+    </div>
+  </div>
+  {% else %}
+  <div class="card"><p>No plans are on sale right now.</p></div>
+  {% endfor %}
+</div>
+{% endblock %}

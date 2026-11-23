@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Welcome{% endblock %}
+{% block content %}
+<section class="hero">
+  <h1>{{ settings.site_name }}</h1>
+  <p>{{ settings.site_tagline }}</p>
+  <div class="actions">
+    <a class="button" href="/signup">Get a credential</a>
+    <a class="button secondary" href="/login">Log in</a>
+  </div>
+</section>
+{% if plans %}
+<h2>Plans</h2>
+<div class="grid">
+  {% for plan in plans %}
+  {% set p = plan.pricing %}
+  <div class="card">
+    <h2>{{ plan.name }}</h2>
+    {% include "_price.html" %}
+    {% if p.credits_per_period %}
+    <p class="small muted">{{ credits_text(p.credits_per_period) }} credits each {{ p.period }}{% if p.credit_packs %}, and packs when you need more{% endif %}.</p>
+    {% else %}
+    <p class="small muted">Buy credits in packs, when you need them.</p>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,7 @@
+{% if p.fee == 0 and p.credits_per_period == 0 and p.credit_packs %}
+  <p class="price">{{ per_credit(p.credit_packs[0].price, p.credit_packs[0].credits, plan.currency) }} <span class="small muted">a credit, in packs</span></p>
+{% elif p.fee == 0 %}
+  <p class="price">{{ money(0, plan.currency) }} <span class="small muted">no monthly fee</span></p>
+{% else %}
+  <p class="price">{{ money(p.fee, plan.currency) }} <span class="small muted">a {{ p.period }}</span></p>
+{% endif %}

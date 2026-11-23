@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Pay for {{ plan.name }}{% endblock %}
+{% block content %}
+{% set p = plan.pricing %}
+<div class="card narrow">
+  <h1>Pay for {{ plan.name }}</h1>
+  {% if error %}<div class="error">{{ error }}</div>{% endif %}
+  <p class="price">{{ money(p.fee, plan.currency) }} <span class="small muted">a {{ p.period }}</span></p>
+  <h2>Terms</h2>
+  <ul class="small">
+    <li>We charge the fee on the 1st of each month, to the card you use now.</li>
+    <li>Your first month is a share of the days left in it, so today's charge can be lower than the full fee.</li>
+    <li>If you cancel, the plan ends at the end of the month. We don't refund the month.</li>
+  </ul>
+  <p class="small muted">The full terms, version {{ settings.terms_version }}: <a href="/terms">read them</a>.</p>
+  <form method="post" action="/subscriptions/{{ subscription.id }}/pay" data-once>
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <label class="inline"><input type="checkbox" name="agree" value="{{ settings.terms_version }}" required> I agree to these terms.</label>
+    <p><button type="submit">Continue to payment</button></p>
+  </form>
+</div>
+{% endblock %}

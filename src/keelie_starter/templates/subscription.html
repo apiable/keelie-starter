@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}{{ plan.name }}{% endblock %}
+{% block content %}
+{% set s = subscription %}
+<div class="card">
+  <h1>{{ plan.name }} <span class="status {{ s.status }}">{{ s.status.replace('_', ' ') }}</span></h1>
+  <p class="balance">Balance: <strong>{{ credits_text(s.credit_balance) }}</strong> credits</p>
+  {% if s.paid_period %}<p class="small muted">Paid up to: {{ s.paid_period }}</p>{% endif %}
+  <p class="small">What you can do:</p>
+  <ul class="tight small">{% for scope in s.scopes %}<li>{{ settings.scope_words.get(scope, scope) }}</li>{% endfor %}</ul>
+
+  {% if s.status == 'active' %}
+    <div class="actions">
+      <a class="button" href="/subscriptions/{{ s.id }}/credentials">Credentials</a>
+      {% if plan.pricing.credit_packs %}<a class="button secondary" href="/subscriptions/{{ s.id }}/top-up">Buy credits</a>{% endif %}
+    </div>
+  {% elif s.status == 'past_due' %}
+    <div class="notice">This month isn't paid yet. You can't call the API until it is.</div>
+    <p><a class="button" href="/subscriptions/{{ s.id }}/pay">Pay now</a></p>
+  {% elif s.status == 'pending' %}
+    <div class="notice">We are reviewing your request. We'll let you know.</div>
+  {% elif s.status == 'suspended' %}
+    <div class="error">This plan is suspended. Please contact us.</div>
+  {% else %}
+    <div class="error">This plan has ended.</div>
+  {% endif %}
+</div>
+<p><a href="/">Back to your account</a></p>
+{% endblock %}

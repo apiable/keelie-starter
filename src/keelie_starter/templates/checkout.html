@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Payment{% endblock %}
+{% block content %}
+<div class="card narrow">
+  <h1>{% if kind == 'pay' %}Pay for {{ plan.name }}{% else %}Buy {{ credits_text(credits) }} credits{% endif %}</h1>
+  <p class="price">{{ amount }}</p>
+  <p class="small muted">{% if kind == 'pay' %}This month includes {{ credits_text(credits) }} credits.{% else %}{{ credits_text(credits) }} credits are added once your bank says yes.{% endif %}</p>
+  {% if settings.demo %}
+  <div class="notice">Demo mode: no card and no Stripe. This button does what Stripe and its webhook do.</div>
+  <form method="post" action="/demo/subscriptions/{{ subscription_id }}/confirm-payment" data-once>
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <input type="hidden" name="return_path" value="{{ return_path }}">
+    <button type="submit">Pay {{ amount }} (demo)</button>
+  </form>
+  {% else %}
+  <form id="payment-form">
+    <div id="payment"></div>
+    <div id="payment-error" class="error" style="display:none;margin-top:12px"></div>
+    <p><button id="submit" type="submit">Pay {{ amount }}</button></p>
+  </form>
+  {% endif %}
+</div>
+{% if not settings.demo %}
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+  // Stripe.js gets three values only. The payment lives in the Provider's own Stripe account.
+  const settings = {{ stripe | tojson }};
+  const stripe = Stripe(settings.publishable_key, settings.stripe_account ? { stripeAccount: settings.stripe_account } : {});
+  const elements = stripe.elements({ clientSecret: settings.client_secret });
+  elements.create("payment").mount("#payment");
+  const form = document.getElementById("payment-form");
+  const button = document.getElementById("submit");
+  const shown = document.getElementById("payment-error");
+  form.addEventListener("submit", async function (event) {
+    event.preventDefault();
+    button.disabled = true;
+    shown.style.display = "none";
+    const { error } = await stripe.confirmPayment({ elements, confirmParams: { return_url: {{ return_url | tojson }} } });
+    if (error) {
+      shown.textContent = error.message || "The payment didn't go through.";
+      shown.style.display = "block";
+      button.disabled = false;
+    }
+  });
+</script>
+{% endif %}
+{% endblock %}

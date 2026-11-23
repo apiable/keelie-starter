@@ -1,0 +1,14 @@
+<div class="card">
+  <h2>How to use a credential</h2>
+  <p>Your code gets a token with OAuth 2.0 <code>client_credentials</code>. It sends the client ID and secret with HTTP Basic auth, to:</p>
+  <pre>{{ token.token_endpoint }}</pre>
+  <p>Every token is for <code>{{ token.resource }}</code>. You may send that address as <code>resource</code>; any other value is refused.
+  What a token allows: {% for scope in subscription.scopes %}<code>{{ scope }}</code>{% if not loop.last %}, {% endif %}{% endfor %}.</p>
+  <pre>TOKEN=$(curl -s -u "YOUR_CLIENT_ID:YOUR_CLIENT_SECRET" \
+  -d grant_type=client_credentials \
+  {{ token.token_endpoint }} | jq -r .access_token)
+
+curl -s -H "Authorization: Bearer $TOKEN" \
+  "{{ token.resource }}{{ settings.api_example_path }}" | jq</pre>
+  <p class="small muted">A token lives a few minutes. Get a new one when it expires.</p>
+</div>

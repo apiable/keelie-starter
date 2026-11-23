@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Buy credits{% endblock %}
+{% block content %}
+{% set s = subscription %}
+<h1>Buy credits for {{ plan.name }}</h1>
+<p class="balance">Balance now: <strong>{{ credits_text(s.credit_balance) }}</strong> credits</p>
+{% if s.status != 'active' %}
+  <div class="notice">Packs are for an active plan. {% if s.status == 'past_due' %}<a href="/subscriptions/{{ s.id }}/pay">Pay this month first.</a>{% endif %}</div>
+{% elif not plan.pricing.credit_packs %}
+  <div class="card"><p>This plan sells no packs.</p></div>
+{% else %}
+<div class="grid">
+  {% for pack in plan.pricing.credit_packs %}
+  <div class="card">
+    <h2>{{ credits_text(pack.credits) }} credits</h2>
+    <p class="price">{{ money(pack.price, plan.currency) }}</p>
+    <p class="small muted">{{ per_credit(pack.price, pack.credits, plan.currency) }} a credit</p>
+    <form class="push" method="post" action="/subscriptions/{{ s.id }}/top-up" data-once>
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <input type="hidden" name="credits" value="{{ pack.credits }}">
+      <input type="hidden" name="n" value="{{ n }}">
+      <label class="inline small"><input type="checkbox" name="save_card" value="yes"> Save this card for automatic top-ups</label>
+      <p><button type="submit">Buy</button></p>
+    </form>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+<p><a href="/subscriptions/{{ s.id }}">Back to your plan</a></p>
+{% endblock %}
