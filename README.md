@@ -48,7 +48,9 @@ credential. Each of the three demo plans shows one way to sell:
 2. Register your product from its OpenAPI file, then make and publish its plans.
 3. Copy `.env.example` to `.env`. Set `KEELIE_MODE=live`, your admin credential, your org id and
    your product id.
-4. Set your brand: `SITE_NAME`, `SITE_TAGLINE`, `ACCENT_COLOR`, `SCOPE_WORDS`.
+4. Set your brand: `SITE_NAME`, `SITE_TAGLINE`, `ACCENT_COLOR`, `SCOPE_WORDS`. Set
+   `API_EXAMPLE_PATH` to a call on your API. If your API does not answer at its audience, set
+   `API_BASE_URL` to the address where it does answer.
 5. Replace `templates/terms.html` with your terms, and set `TERMS_VERSION`.
 6. Run it behind https: `uv run uvicorn keelie_starter.asgi:app --host 0.0.0.0 --port 8000`.
 

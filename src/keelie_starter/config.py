@@ -51,6 +51,10 @@ class Settings(BaseSettings):
     # An example call for the "how to use" box: a path on your API, after its address.
     api_example_path: str = "/sun?lat=60.17&lon=24.94"
 
+    # Where the example call goes. Leave it empty when your API answers at the token's audience.
+    # Set it when it does not, such as an API that runs on your own machine.
+    api_base_url: str = ""
+
     # Demo mode only: the address shown for the API, since there is no product to read it from.
     demo_api_url: str = "https://daylight.example.com/v1"
 

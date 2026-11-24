@@ -6,6 +6,9 @@ import re
 import httpx
 import pytest
 
+from keelie_starter.app import create_app
+from keelie_starter.config import Settings
+from keelie_starter.db import Database
 from keelie_starter.demo import DemoKeelie, demo_plans
 from tests.conftest import PASSWORD, csrf_of, field_of, sign_up, subscribe
 
@@ -204,3 +207,26 @@ async def test_no_secret_reaches_the_log(
     assert secret
     assert secret.group(0) not in caplog.text
     assert PASSWORD not in caplog.text
+
+
+@pytest.mark.parametrize(
+    ("base_url", "called"),
+    [
+        ("", "https://daylight.example.com/v1/sun?"),
+        ("http://127.0.0.1:8097/", "http://127.0.0.1:8097/sun?"),
+    ],
+)
+async def test_the_example_call_goes_to_the_api_address(
+    keelie: DemoKeelie, base_url: str, called: str
+) -> None:
+    settings = Settings(
+        keelie_mode="demo", database_path=":memory:", api_base_url=base_url, _env_file=None
+    )
+    app = create_app(settings, keelie, Database(":memory:"))
+    transport = httpx.ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://site.test") as client:
+        await sign_up(client)
+        sid = subscription_id_of(await subscribe(client, FREE))
+        page = await client.get(f"/subscriptions/{sid}/credentials")
+    assert called in page.text
+    assert "Every token is for <code>https://daylight.example.com/v1</code>" in page.text
