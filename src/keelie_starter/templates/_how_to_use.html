@@ -10,5 +10,5 @@
 
 curl -s -H "Authorization: Bearer $TOKEN" \
   "{{ token.resource }}{{ settings.api_example_path }}" | jq</pre>
-  <p class="small muted">A token lives a few minutes. Get a new one when it expires.</p>
+  <p class="small muted">A token lasts the number of seconds in its <code>expires_in</code> field. Get a new one before it runs out.</p>
 </div>
